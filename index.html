@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Albion refining calculator</h1>
+  <label for="material">Material:</label>
+  <select id="material">
+    <option value="hide">Hide</option>
+    <option value="wood">Wood</option>
+    <option value="fiber">Fiber</option>
+    <option value="rock">Rock</option>
+    <option value="ore">Ore</option>
+  </select>
+
+  <label for="tier">Tier</label>
+  <select id="tier">
+    <option value="3">III</option>
+    <option value="4">IV</option>
+    <option value="5">V</option>
+    <option value="6">VI</option>
+    <option value="7">VII</option>
+    <option value="8">VIII</option>
+  </select>
+
+  <label for="level">Level:</label>
+  <select id="level">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+  </select>
+
+  <label for="weight" >Capacity</label>
+  <input type="number" id="weight" value="4389.19"> 
+
+  <label for="capital">Capital</label>
+  <input type="number" id="capital" checked>
+
+  <label for="calculate">Calculate by:</label>
+  <div id="calculate">
+    <input type="radio" id="max_capital" name="calculate"><label for="max_capital">Capital</label>
+    <input type="radio" id="capacity" name="calculate"><label for="capacity">Capacity</label>
+  </div>
+  <button id="startButton">Calculate</button>
+  <p id="sheet"></p>
+  <script src="script.js"></script>  
+</body>
+</html>
