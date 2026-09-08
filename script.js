@@ -1,11 +1,12 @@
-let startButton = document.getElementById("startButton")
-let materialEl = document.getElementById("material")
-let tierEl = document.getElementById("tier")
-let levelEl = document.getElementById("level")
-let weightEl = document.getElementById("weight")
-let capitalEl = document.getElementById("capital")
+const startButton = document.getElementById("startButton")
+const materialEl = document.getElementById("material")
+const tierEl = document.getElementById("tier")
+const levelEl = document.getElementById("level")
+const weightEl = document.getElementById("weight")
+const capitalEl = document.getElementById("capital")
 let calculateByCapital = false
-let sheet = document.getElementById("sheet")
+const sheet = document.getElementById("sheet")
+const profitEl = document.getElementById("profit")
 const AlbionMaterials = {
     2: {raw: 1, weight: 0.23},
     3: {raw: 2, weight: 0.34},
@@ -67,6 +68,14 @@ function calculationSheet(material, tier, level, calculateByCapital, capitalOrWe
     tbl.appendChild(tbdy)
     sheet.innerHTML = ""
     sheet.appendChild(tbl)
+    let valueText = document.createElement("label")
+    valueText.setAttribute("for", "sell_value")
+    valueText.appendChild(document.createTextNode("Sell value:"))
+    sheet.appendChild(valueText)
+    let value = document.createElement("input")
+    value.setAttribute("type", "number")
+    value.setAttribute("id", "sell_value")
+    sheet.appendChild(value)
     let button = document.createElement("button")
     button.setAttribute("id", "real_calculate")
     button.innerHTML = "Calculate profit!"
@@ -105,7 +114,7 @@ function priceTable(tr, tier)
         else
         {
             let input = document.createElement("input")
-            input.setAttribute("id", "t"+j+"_price")
+            input.setAttribute("id", `t${j}_price`)
             td.appendChild(input)
             tr.appendChild(td)
         }
@@ -125,7 +134,7 @@ function quantityTable(tr, tier)
         else
         {
             let p = document.createElement("p")
-            p.setAttribute("id", "t"+j+"_quantity")
+            p.setAttribute("id", `t${j}_quantity`)
             td.appendChild(p)
             tr.appendChild(td)
         }
@@ -135,36 +144,71 @@ function quantityTable(tr, tier)
 function profit()
 {
     let tier = tierEl.value
-    let max_weight = weightEl.value /0.7
+    let max_weight = (weightEl.value-10) /0.7
     let divider = 0
     let R = 1 - 0.367
     for (let i = tier; i > 1; i--)
-    {
-        if(i==tier)
-        {
-            divider += AlbionMaterials[i].raw * AlbionMaterials[i].weight
-        }
-        else
-        {
-            divider += AlbionMaterials[i].raw * AlbionMaterials[i].weight * Math.pow(R, tier - i)
-        }
-        console.log(divider)
+    { 
+        divider += AlbionMaterials[i].raw * AlbionMaterials[i].weight * Math.pow(R, tier - i)
     }
     let how_many = max_weight/divider
-    console.log(how_many)
     for (let i = tier; i > 1; i--)
     {
-        let this_many = 0
-        if(i==tier)
-        {
-            this_many = how_many * AlbionMaterials[i].raw
-        }
-        else
-        {
-            this_many = how_many * AlbionMaterials[i].raw * Math.pow(R, tier - i)
-        }
-        document.getElementById("t"+i+"_quantity").textContent = this_many
-        console.log(tier-i)
+        let this_many = Math.ceil(how_many * AlbionMaterials[i].raw * Math.pow(R, tier - i))
+        document.getElementById(`t${i}_quantity`).textContent = this_many
     }
+
+    let cost = 0, price, quantity
+    for (let i = tier; i > 1; i--)
+    {
+        price = document.getElementById(`t${i}_price`).value
+        quantity = document.getElementById(`t${i}_quantity`).textContent
+        cost += price * quantity
+    }
+    cost = Math.ceil(cost * 1.025)
+    let profit = Math.ceil((document.getElementById("sell_value").value * how_many * 0.935 / (1-0.367)) - cost)
+    // note to add the refining cost, but need to do research for that 
+    let tbl = document.createElement("table")
+    let tbdy = document.createElement("tbody")
+    for(let i = 0; i<2; i++)
+    {
+        let tr = document.createElement("tr")
+        for(let j=0; j<2; j++)
+        {
+            if(i==0)
+            {
+                if(j==0)
+                {
+                    let td = document.createElement("td")
+                    td.appendChild(document.createTextNode("Cost"))
+                    tr.appendChild(td)
+                }
+                else
+                {
+                    let td = document.createElement("td")
+                    td.appendChild(document.createTextNode("Profit"))
+                    tr.appendChild(td)
+                }
+            }
+            else
+            {
+                if(j==0)
+                {
+                    let td = document.createElement("td")
+                    td.appendChild(document.createTextNode(cost))
+                    tr.appendChild(td)
+                }
+                else
+                {
+                    let td = document.createElement("td")
+                    td.appendChild(document.createTextNode(profit))
+                    tr.appendChild(td)
+                }
+            }
+        }
+        tbdy.appendChild(tr)   
+    }
+    tbl.appendChild(tbdy)
+    profitEl.appendChild(tbl)
 }
 
