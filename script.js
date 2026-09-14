@@ -143,6 +143,7 @@ function quantityTable(tr, tier)
 
 function profit()
 {
+    profitEl.textContent = ""
     let tier = tierEl.value
     let max_weight = (weightEl.value-10) /0.7
     let divider = 0
