@@ -31,6 +31,7 @@
 
   <label for="level">Level:</label>
   <select id="level">
+    <option value="0">0</option>
     <option value="1">1</option>
     <option value="2">2</option>
     <option value="3">3</option>
@@ -43,10 +44,12 @@
   <label for="capital">Capital</label>
   <input type="number" id="capital" checked>
 
-  <label for="calculate">Calculate by:</label>
-  <div id="calculate">
-    <input type="radio" id="max_capital" name="calculate"><label for="max_capital">Capital</label>
-    <input type="radio" id="capacity" name="calculate"><label for="capacity">Capacity</label>
+  <div class="calc-by-group">
+    <label for="calculate">Calculate by:</label>
+    <div id="calculate">
+      <input type="radio" id="max_capital" name="calculate"><label for="max_capital">Capital</label>
+      <input type="radio" id="capacity" name="calculate"><label for="capacity">Capacity</label>
+    </div>
   </div>
   <button id="startButton">Calculate</button>
   </div>

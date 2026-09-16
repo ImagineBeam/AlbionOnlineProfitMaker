@@ -17,6 +17,7 @@ const AlbionMaterials = {
     8: {raw: 5, weight: 2.6}
 }
 
+
 function start()
 {
     let material = materialEl.value
@@ -46,6 +47,8 @@ function calculationSheet(material, tier, level, calculateByCapital, capitalOrWe
 {
     // material is only for visuals (it doesn't affect calculations, just prices in the future with API)
     // level only affects price with API
+    let tierTables = document.createElement("div")
+    tierTables.setAttribute("id", "tierTables")
     let tbl = document.createElement("table")
     let tbdy = document.createElement("tbody")
     for(let i=0; i<3; i++)
@@ -66,8 +69,9 @@ function calculationSheet(material, tier, level, calculateByCapital, capitalOrWe
         tbdy.appendChild(tr)
     }
     tbl.appendChild(tbdy)
+    tierTables.append(tbl)
     sheet.innerHTML = ""
-    sheet.appendChild(tbl)
+    sheet.appendChild(tierTables)
     let valueText = document.createElement("label")
     valueText.setAttribute("for", "sell_value")
     valueText.appendChild(document.createTextNode("Sell value:"))
@@ -115,6 +119,7 @@ function priceTable(tr, tier)
         {
             let input = document.createElement("input")
             input.setAttribute("id", `t${j}_price`)
+            input.setAttribute("type", "number")
             td.appendChild(input)
             tr.appendChild(td)
         }
@@ -141,10 +146,16 @@ function quantityTable(tr, tier)
     }
 }
 
+function getFoodCost(tier, enchantment) {
+    return 0.45 * Math.pow(2, parseInt(tier) + parseInt(enchantment) - 2);
+}
+
 function profit()
 {
     profitEl.textContent = ""
     let tier = tierEl.value
+    let level = levelEl.value
+    let pricePer100Food = 400
     let max_weight = (weightEl.value-10) /0.7
     let divider = 0
     let R = 1 - 0.367
@@ -153,13 +164,28 @@ function profit()
         divider += AlbionMaterials[i].raw * AlbionMaterials[i].weight * Math.pow(R, tier - i)
     }
     let how_many = max_weight/divider
+    let totalNutrition = 0
     for (let i = tier; i > 1; i--)
     {
         let this_many = Math.ceil(how_many * AlbionMaterials[i].raw * Math.pow(R, tier - i))
         document.getElementById(`t${i}_quantity`).textContent = this_many
+
+        let currentEnchantment
+        if (i>=4)
+        {
+            currentEnchantment = level
+        }
+        else
+        {
+            currentEnchantment = 0
+        }
+        let foodPerCraft = getFoodCost(i, currentEnchantment)
+        let foodForThisTier = foodPerCraft * this_many 
+
+        totalNutrition += foodForThisTier
     }
 
-    let cost = 0, price, quantity
+    let cost = totalNutrition/100 * pricePer100Food, price, quantity
     for (let i = tier; i > 1; i--)
     {
         price = document.getElementById(`t${i}_price`).value
@@ -168,7 +194,6 @@ function profit()
     }
     cost = Math.ceil(cost * 1.025)
     let profit = Math.ceil((document.getElementById("sell_value").value * how_many * 0.935 / (1-0.367)) - cost)
-    // note to add the refining cost, but need to do research for that 
     let tbl = document.createElement("table")
     let tbdy = document.createElement("tbody")
     for(let i = 0; i<2; i++)
