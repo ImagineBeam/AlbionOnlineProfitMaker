@@ -4,9 +4,9 @@ const tierEl = document.getElementById("tier")
 const levelEl = document.getElementById("level")
 const weightEl = document.getElementById("weight")
 const capitalEl = document.getElementById("capital")
-let calculateByCapital = false
 const sheet = document.getElementById("sheet")
 const profitEl = document.getElementById("profit")
+const capitalElBox = document.getElementById("max_capital")
 const AlbionMaterials = {
     2: {raw: 1, weight: 0.23},
     3: {raw: 2, weight: 0.34},
@@ -20,33 +20,16 @@ const AlbionMaterials = {
 
 function start()
 {
-    let material = materialEl.value
     let tier = tierEl.value
-    let level = levelEl.value
 
-
-    if(document.getElementById("max_capital").checked)
-    {
-        calculateByCapital = true
-        capitalOrWeight = capitalEl.value
-    }
-    else
-    {
-        calculateByCapital = false
-        capitalOrWeight = weightEl.value
-    }
-    
-    
-    calculationSheet(material, tier, level, calculateByCapital, capitalOrWeight)
+    calculationSheet(tier)
 }
     
 
 startButton.addEventListener("click", () => start())
 
-function calculationSheet(material, tier, level, calculateByCapital, capitalOrWeight)
+function calculationSheet(tier)
 {
-    // material is only for visuals (it doesn't affect calculations, just prices in the future with API)
-    // level only affects price with API
     let tierTables = document.createElement("div")
     tierTables.setAttribute("id", "tierTables")
     let tbl = document.createElement("table")
@@ -150,21 +133,14 @@ function getFoodCost(tier, enchantment) {
     return 0.45 * Math.pow(2, parseInt(tier) + parseInt(enchantment) - 2);
 }
 
-function profit()
+function getCost(how_many, R, tier)
 {
-    profitEl.textContent = ""
-    let tier = tierEl.value
-    let level = levelEl.value
-    let pricePer100Food = 400
-    let max_weight = (weightEl.value-10) /0.7
-    let divider = 0
-    let R = 1 - 0.367
-    for (let i = tier; i > 1; i--)
-    { 
-        divider += AlbionMaterials[i].raw * AlbionMaterials[i].weight * Math.pow(R, tier - i)
-    }
-    let how_many = max_weight/divider
+    
+    let level = parseInt(levelEl.value)
+    let price, quantity
+    let cost = 0
     let totalNutrition = 0
+    let pricePer100Food = 400
     for (let i = tier; i > 1; i--)
     {
         let this_many = Math.ceil(how_many * AlbionMaterials[i].raw * Math.pow(R, tier - i))
@@ -185,15 +161,48 @@ function profit()
         totalNutrition += foodForThisTier
     }
 
-    let cost = totalNutrition/100 * pricePer100Food, price, quantity
+    cost = totalNutrition/100 * pricePer100Food
     for (let i = tier; i > 1; i--)
     {
         price = document.getElementById(`t${i}_price`).value
         quantity = document.getElementById(`t${i}_quantity`).textContent
-        cost += price * quantity
+        cost += price * quantity * 1.025
     }
-    cost = Math.ceil(cost * 1.025)
-    let profit = Math.ceil((document.getElementById("sell_value").value * how_many * 0.935 / (1-0.367)) - cost)
+
+    cost = Math.ceil(cost)
+    return cost
+}
+
+function profit()
+{
+    profitEl.textContent = ""
+    let calculateByCapital = capitalElBox.checked
+    console.log(calculateByCapital)
+    let tier = parseInt(tierEl.value)
+    let capital = parseInt(capitalEl.value)
+    let max_weight = (weightEl.value-10) /0.7
+    let divider = 0
+    let R = 1 - 0.367
+    for (let i = tier; i > 1; i--)
+    { 
+        divider += AlbionMaterials[i].raw * AlbionMaterials[i].weight * Math.pow(R, tier - i)
+    }
+    let how_many = max_weight/divider
+    
+    let cost = getCost(how_many, R, tier)
+
+    if(calculateByCapital)
+    {
+        if(cost > capital)
+        {
+            let costPerUnit = cost / how_many 
+            max_amount = Math.ceil(capital / costPerUnit) - 5
+            cost = getCost(max_amount, R, tier)
+            how_many = max_amount
+        }
+    }
+        
+    let profit = Math.ceil((document.getElementById("sell_value").value * how_many * 0.935 / R) - cost)
     let tbl = document.createElement("table")
     let tbdy = document.createElement("tbody")
     for(let i = 0; i<2; i++)
